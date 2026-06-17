@@ -1,0 +1,113 @@
+#!/usr/bin/env bash
+# kit-validate — Lint estrutural de um repo de nicho (sem precisar de VPS).
+#
+# Uso:  bin/kit-validate /caminho/para/<produto>-ccb
+#
+# Confere: estrutura de arquivos · produto.conf completo (sem placeholders) ·
+# install.sh sem placeholders · o questionário PARSEIA no motor real ·
+# todo {{PLACEHOLDER}} do template é preenchido por alguma pergunta ·
+# bash -n em todos os .sh · shellcheck (se instalado).
+set -uo pipefail
+
+DESTINO="${1:-}"
+FALHAS=0
+
+ok()   { printf '  \033[32m✔\033[0m %s\n' "$*"; }
+bad()  { printf '  \033[31m✘\033[0m %s\n' "$*"; FALHAS=$((FALHAS+1)); }
+warn() { printf '  \033[33m!\033[0m %s\n' "$*"; }
+sec()  { printf '\n\033[36m\033[1m%s\033[0m\n' "$*"; }
+
+[[ -n "$DESTINO" && -d "$DESTINO" ]] || { echo "Uso: kit-validate <pasta-do-repo-do-nicho>"; exit 2; }
+
+sec "1) Estrutura de arquivos"
+for f in produto.conf install.sh instalar.sh doctor.sh VERSION KIT_VERSION \
+         nicho/negocio.perguntas nicho/business-context.template.md \
+         lib/00-core.sh lib/11-negocio.sh lib/90-checks.sh \
+         modelos/apply_zernio_patch.py modelos/prompt-rota-webhook.txt modelos/cloudflared.service.tmpl; do
+  [[ -e "$DESTINO/$f" ]] && ok "$f" || bad "faltando: $f"
+done
+
+sec "2) produto.conf"
+# shellcheck source=/dev/null
+source "$DESTINO/produto.conf"
+for k in PRODUTO PRODUTO_NOME CLI_NAME PERFIL_PADRAO NICHO TRACK REPO_URL RAW_BASE; do
+  v="${!k:-}"
+  if [[ -z "$v" ]]; then bad "$k vazio"
+  elif [[ "$v" == __*__ ]]; then bad "$k ainda é placeholder ($v)"
+  else ok "$k=$v"; fi
+done
+[[ "${TRACK:-}" == "solo" || "${TRACK:-}" == "squad" ]] || bad "TRACK deve ser solo|squad (atual: ${TRACK:-})"
+if [[ "${TRACK:-}" == "squad" ]]; then
+  [[ -n "${SQUAD_FRAMEWORK:-}" && "${SQUAD_FRAMEWORK}" != __*__ ]] && ok "SQUAD_FRAMEWORK=${SQUAD_FRAMEWORK}" \
+    || bad "TRACK=squad exige SQUAD_FRAMEWORK"
+fi
+
+sec "3) install.sh (sem placeholders pendentes)"
+if grep -qE '__[A-Z_]+__' "$DESTINO/install.sh"; then
+  bad "install.sh ainda tem placeholders: $(grep -oE '__[A-Z_]+__' "$DESTINO/install.sh" | sort -u | tr '\n' ' ')"
+  warn "rode bin/kit-sync $DESTINO"
+else
+  ok "install.sh renderizado"
+fi
+
+sec "4) Questionário parseia no motor real"
+PHS_PERG="$(
+  BASE_DIR="$DESTINO"
+  # shellcheck source=/dev/null
+  source "$DESTINO/produto.conf"
+  # shellcheck source=/dev/null
+  source "$DESTINO/lib/00-core.sh" >/dev/null 2>&1
+  # shellcheck source=/dev/null
+  source "$DESTINO/lib/11-negocio.sh" >/dev/null 2>&1
+  if _carregar_perguntas "$DESTINO/nicho/negocio.perguntas" >/dev/null 2>&1; then
+    printf '%s\n' "${PERG_PLACEHOLDER[@]}"
+  else
+    echo "__PARSE_FAIL__"
+  fi
+)"
+if [[ "$PHS_PERG" == *"__PARSE_FAIL__"* || -z "$PHS_PERG" ]]; then
+  bad "negocio.perguntas não parseou (veja o formato em templates/nicho/negocio.perguntas.tmpl)"
+else
+  n_perg="$(printf '%s\n' "$PHS_PERG" | grep -c . || true)"
+  ok "$n_perg pergunta(s) parseada(s): $(printf '%s ' $PHS_PERG)"
+fi
+
+sec "5) Placeholders do template estão cobertos"
+PHS_TPL="$(grep -oE '\{\{[A-Z_]+\}\}' "$DESTINO/nicho/business-context.template.md" 2>/dev/null \
+           | sed 's/[{}]//g' | sort -u)"
+if [[ -z "$PHS_TPL" ]]; then
+  warn "o template não usa nenhum {{PLACEHOLDER}} — confirme se é intencional"
+else
+  for ph in $PHS_TPL; do
+    if printf '%s\n' "$PHS_PERG" | grep -qxF "$ph"; then ok "{{$ph}} ← preenchido por uma pergunta"
+    else bad "{{$ph}} no template NÃO é preenchido por nenhuma pergunta"; fi
+  done
+  # Perguntas sem uso no template (aviso, não erro)
+  for ph in $PHS_PERG; do
+    printf '%s\n' "$PHS_TPL" | grep -qxF "$ph" || warn "pergunta '$ph' não aparece no template (ok se proposital)"
+  done
+fi
+
+sec "6) Sintaxe (bash -n) + shellcheck"
+for sh in "$DESTINO"/*.sh "$DESTINO"/lib/*.sh; do
+  [[ -e "$sh" ]] || continue
+  bash -n "$sh" 2>/dev/null && ok "bash -n $(basename "$sh")" || bad "erro de sintaxe: $(basename "$sh")"
+done
+if command -v shellcheck >/dev/null 2>&1; then
+  if shellcheck -S error -e SC1090,SC1091 "$DESTINO"/*.sh "$DESTINO"/lib/*.sh >/tmp/kit-shellcheck.out 2>&1; then
+    ok "shellcheck (sem erros)"
+  else
+    bad "shellcheck encontrou erros (veja /tmp/kit-shellcheck.out)"
+  fi
+else
+  warn "shellcheck não instalado — pulando (instale com: apt-get install shellcheck)"
+fi
+
+sec "Resultado"
+if (( FALHAS == 0 )); then
+  printf '\033[32m✔ %s passou na validação estrutural.\033[0m\n' "${PRODUTO:-produto}"
+  exit 0
+else
+  printf '\033[31m✘ %d problema(s) — corrija antes de publicar.\033[0m\n' "$FALHAS"
+  exit 1
+fi

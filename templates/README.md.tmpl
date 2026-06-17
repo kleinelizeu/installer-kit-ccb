@@ -1,0 +1,73 @@
+<!--
+  README.md.tmpl — Esqueleto do README de um produto de nicho.
+  ORDEM OBRIGATÓRIA das seções (0 a 7). Tom: PT-BR, zero jargão, dono de negócio.
+  Substitua os __PLACEHOLDERS__ e os <!-- TODO --> pelo conteúdo do nicho.
+  Mantenha o GIF no TOPO (seção 0).
+-->
+
+# __PRODUTO_NOME__
+
+<!-- 0. DEMONSTRAÇÃO (GIF no topo) -->
+![Demonstração](docs/imagens/demo.gif)
+
+> Como gravar a demo (15–30s): mostre o aluno mandando uma mensagem no Telegram e o
+> agente respondendo. Grave a tela (ex.: `asciinema`/QuickTime/ScreenToGif), exporte
+> um GIF de 15–30s e salve em `docs/imagens/demo.gif`. Placeholder até lá.
+
+## 1. O que é
+<!-- Uma frase. Ex.: "Um agente que cuida do Instagram da sua __NICHO__: responde
+     comentários e DMs e cria posts, controlado pelo Telegram — sem você precisar mexer em código." -->
+__UMA_FRASE__
+
+## 2. Benefícios
+<!-- Bullets concretos para o dono do negócio. -->
+- <!-- TODO benefício 1 -->
+- <!-- TODO benefício 2 -->
+- <!-- TODO benefício 3 -->
+
+## 3. Casos de uso reais
+<!-- 3 a 5 cenários do dia a dia DO NICHO. Ver docs/CASOS-DE-USO.md para o detalhe. -->
+- **<!-- cenário -->** — <!-- o que o agente faz -->
+- **<!-- cenário -->** — <!-- o que o agente faz -->
+- **<!-- cenário -->** — <!-- o que o agente faz -->
+
+## 4. Pré-requisitos
+1. Uma **VPS** com o **Hermes Agent já instalado** (Docker **ou** nativo). (Material da CCB.)
+2. O Hermes com um **modelo de IA configurado** (`hermes setup`).
+3. **Telegram** no celular.
+4. Uma conta no **Zernio** (zernio.com) com o **Instagram conectado**.
+
+## 5. Como instalar (1 comando)
+Conecte na sua VPS por SSH e cole:
+
+```bash
+curl -fsSL __RAW_BASE__/install.sh | sudo bash
+```
+
+O assistente abre sozinho e te guia. Depois, a qualquer momento:
+
+```bash
+__CLI_NAME__            # roda/continua o assistente
+__CLI_NAME__ doctor     # confere tudo e corrige problemas comuns
+__CLI_NAME__ info       # mostra endereço do webhook, chave e nome do bot
+__CLI_NAME__ contexto   # mostra o texto do seu negócio para colar no bot
+```
+
+## 6. Como usar no dia a dia
+<!-- Exemplos PRONTOS do que mandar pro bot, no contexto do nicho. -->
+- "<!-- exemplo de pedido de post -->"
+- "<!-- exemplo de pergunta/comando -->"
+- "<!-- exemplo -->"
+
+## 7. Perguntas frequentes + comandos
+**Preciso saber programar?** Não. O assistente faz tudo e explica onde clicar.
+
+**Mexe no meu Hermes que já uso?** Cria um agente **separado** (`__PERFIL_PADRAO__`), sem mexer no que você já tem.
+
+**Onde ficam minhas senhas e chaves?** Só na **sua VPS**, em `/root/.__PRODUTO__/` (protegida).
+
+**Testei do meu próprio Instagram e não respondeu.** Normal: o Zernio só dispara para **outra** pessoa.
+
+**As respostas pararam.** Rode `__CLI_NAME__ doctor` — costuma detectar e corrigir.
+
+Mais detalhes em [docs/COMO-FUNCIONA.md](docs/COMO-FUNCIONA.md), [docs/CASOS-DE-USO.md](docs/CASOS-DE-USO.md) e [docs/PROBLEMAS-COMUNS.md](docs/PROBLEMAS-COMUNS.md).

@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+# kit-sync — Vendoriza o motor do installer-kit-ccb num repo de nicho.
+#
+# Uso:  bin/kit-sync /caminho/para/<produto>-ccb
+#
+# Faz, a partir do produto.conf JÁ EXISTENTE no repo do nicho:
+#   - copia lib/ e modelos/ do kit (motor genérico, testado);
+#   - se TRACK=squad, copia também o lib do framework (80-*.sh + 95-checks-extra.sh);
+#   - gera install.sh (com os literais do produto), instalar.sh e doctor.sh;
+#   - copia VERSION se faltar; carimba KIT_VERSION.
+# NÃO toca em: nicho/, produto.conf, banner.txt, README.md, docs/.
+set -euo pipefail
+
+KIT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
+DESTINO="${1:-}"
+
+erro() { printf '\033[31m✘\033[0m %s\n' "$*" >&2; }
+ok()   { printf '\033[32m✔\033[0m %s\n' "$*"; }
+inf()  { printf '→ %s\n' "$*"; }
+
+[[ -n "$DESTINO" ]]            || { erro "Uso: kit-sync <pasta-do-repo-do-nicho>"; exit 1; }
+[[ -d "$DESTINO" ]]           || { erro "Pasta não existe: $DESTINO"; exit 1; }
+[[ -f "$DESTINO/produto.conf" ]] || { erro "Falta produto.conf em $DESTINO (copie de templates/produto.conf.tmpl)."; exit 1; }
+
+# Carrega a identidade do produto.
+# shellcheck source=/dev/null
+source "$DESTINO/produto.conf"
+
+# Confere chaves obrigatórias.
+faltam=()
+for k in PRODUTO PRODUTO_NOME CLI_NAME PERFIL_PADRAO NICHO TRACK REPO_URL RAW_BASE; do
+  [[ -n "${!k:-}" ]] || faltam+=("$k")
+  [[ "${!k:-}" == __*__ ]] && faltam+=("$k(placeholder)")
+done
+if (( ${#faltam[@]} > 0 )); then
+  erro "produto.conf incompleto — preencha: ${faltam[*]}"; exit 1
+fi
+
+inf "Vendorizando o motor para $PRODUTO ($TRACK)..."
+
+# 1) Motor
+mkdir -p "$DESTINO/lib" "$DESTINO/modelos"
+cp "$KIT_DIR"/lib/*.sh "$DESTINO/lib/"
+cp "$KIT_DIR"/modelos/* "$DESTINO/modelos/"
+
+# 2) Squad: anexa o lib do framework e as checagens extras.
+if [[ "$TRACK" == "squad" ]]; then
+  case "$SQUAD_FRAMEWORK" in
+    ruflo)
+      [[ -f "$KIT_DIR/squad/ruflo/80-ruflo.sh" ]] || { erro "Falta squad/ruflo/80-ruflo.sh no kit."; exit 1; }
+      cp "$KIT_DIR/squad/ruflo/80-ruflo.sh"      "$DESTINO/lib/80-ruflo.sh"
+      cp "$KIT_DIR/squad/ruflo/checks-ruflo.sh"  "$DESTINO/lib/95-checks-extra.sh"
+      ;;
+    ecc)
+      erro "TRACK=squad com ECC ainda é um SPIKE (não construir). Veja squad/ecc/README-SPIKE.md."
+      exit 1
+      ;;
+    *)
+      erro "TRACK=squad exige SQUAD_FRAMEWORK=ruflo (ou ecc, ainda em spike). Valor atual: '${SQUAD_FRAMEWORK:-}'."
+      exit 1
+      ;;
+  esac
+fi
+
+# 3) Gera install.sh com os literais do produto (sed com delimitador '|').
+sed -e "s|__PRODUTO__|${PRODUTO}|g" \
+    -e "s|__PRODUTO_NOME__|${PRODUTO_NOME}|g" \
+    -e "s|__CLI_NAME__|${CLI_NAME}|g" \
+    -e "s|__REPO_URL__|${REPO_URL}|g" \
+    -e "s|__RAW_BASE__|${RAW_BASE}|g" \
+    "$KIT_DIR/templates/install.sh.tmpl" > "$DESTINO/install.sh"
+
+# 4) Orquestrador + doctor (genéricos, sourçam produto.conf).
+cp "$KIT_DIR/templates/instalar.sh" "$DESTINO/instalar.sh"
+cp "$KIT_DIR/templates/doctor.sh"   "$DESTINO/doctor.sh"
+chmod +x "$DESTINO/install.sh" "$DESTINO/instalar.sh" "$DESTINO/doctor.sh"
+
+# 5) VERSION (se faltar) e KIT_VERSION.
+[[ -f "$DESTINO/VERSION" ]] || cp "$KIT_DIR/templates/VERSION" "$DESTINO/VERSION"
+cp "$KIT_DIR/KIT_VERSION" "$DESTINO/KIT_VERSION"
+
+ok "Motor sincronizado (kit $(cat "$KIT_DIR/KIT_VERSION"))."
+inf "Não toquei em: nicho/, produto.conf, banner.txt, README.md, docs/."
+inf "Próximo: rode  bin/kit-validate $DESTINO"

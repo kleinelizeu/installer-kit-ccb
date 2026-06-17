@@ -1,0 +1,61 @@
+# negocio.perguntas — Questionário do negócio (formato declarativo, lido por lib/11-negocio.sh).
+# Este é o ARQUÉTIPO genérico (equivale ao questionário do hermes-sdr-ccb). Adapte por nicho.
+#
+# Regras do formato:
+#   - Linhas começando com # são comentários; linhas em branco separam blocos.
+#   - Cada bloco começa com [campo] (texto livre) ou [menu] (escolha por número).
+#   - Chaves: placeholder, tipo, valida, dica, opcional, default, titulo, texto, opcao, outro.
+#   - placeholder = NOME usado como {{NOME}} no business-context.template.md.
+#   - tipo: texto (default) | instagram (valida o @ e adiciona o "@").
+#   - [menu]: cada 'opcao = Rótulo curto | Frase que entra no contexto do agente.'
+#             'outro = sim' adiciona a opção "Outro (eu descrevo)".
+#   - NÃO use o caractere '|' dentro do texto das opções.
+
+[campo]
+placeholder = NOME_NEGOCIO
+valida = valida_nao_vazio
+texto = Qual o nome do seu negócio?
+
+[campo]
+placeholder = O_QUE_VENDE
+valida = valida_nao_vazio
+texto = Em uma ou duas frases: o que você vende ou que serviço presta?
+
+[campo]
+placeholder = CLIENTE_IDEAL
+valida = valida_nao_vazio
+texto = Quem é seu cliente ideal? (ex.: "mães da minha cidade", "donos de restaurante")
+
+[campo]
+placeholder = FAIXA_PRECO
+opcional = sim
+default = (sob consulta)
+texto = Faixa de preço dos seus produtos/serviços? (ex.: "de R$ 80 a R$ 350") — Enter pula
+
+[campo]
+placeholder = INSTAGRAM_HANDLE
+tipo = instagram
+texto = Qual o @ do Instagram do negócio? (ex.: @minhaloja)
+
+[menu]
+placeholder = TOM_DE_VOZ_DESCRICAO
+titulo = Como você gosta de falar com o cliente?
+texto = Escolha (1 a N):
+opcao = Próximo e divertido | Fale como um amigo próximo: leve, divertido, linguagem do dia a dia, sem formalidade.
+opcao = Profissional e direto | Fale de forma profissional e direta: objetivo, confiante, sem enrolação.
+opcao = Acolhedor e calmo | Fale de forma acolhedora e calma: gentil, paciente, passando segurança.
+outro = sim
+
+[campo]
+placeholder = RESTRICOES
+opcional = sim
+default = Não prometer nada que não esteja combinado com o dono.
+texto = Tem algo que o agente NUNCA deve fazer ou prometer? (ex.: "nunca dar desconto") — Enter pula
+
+[menu]
+placeholder = REGRA_PRECO
+titulo = Quando alguém pergunta preço ou quer comprar, o que o agente deve fazer?
+texto = Escolha (1 a N):
+opcao = Responder o preço e chamar pro Direct/WhatsApp | Responda o preço (dentro da faixa abaixo) e convide a pessoa a continuar no Direct ou WhatsApp.
+opcao = Só chamar pro Direct/WhatsApp | Não passe valores no comentário; convide a pessoa para o Direct ou WhatsApp para falar dos detalhes.
+opcao = Avisar você antes | Não responda o preço sozinho: avise o dono no Telegram e aguarde antes de dar qualquer valor.

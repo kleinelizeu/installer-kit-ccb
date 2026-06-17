@@ -1,0 +1,44 @@
+<!-- PROBLEMAS-COMUNS.md.tmpl — sintoma -> correção. A base abaixo é genérica e serve
+     para todos os nichos. Acrescente itens específicos do nicho se houver. -->
+# Problemas comuns (e como resolver)
+
+A maioria se resolve rodando:
+
+```bash
+__CLI_NAME__ doctor
+```
+
+---
+
+### "Comentei/mandei DM e o agente não respondeu"
+**Quase sempre não é bug.** O Zernio só dispara o webhook para interações de **outra** pessoa. Teste de **outra conta** do Instagram.
+
+### "As respostas pararam de funcionar do nada" (instalação nativa)
+O endereço do túnel (Cloudflare) provavelmente **mudou** (a VPS reiniciou). Rode `__CLI_NAME__ doctor`: ele mostra o **endereço novo**. Atualize no painel do Zernio em *Webhooks → seu webhook → Endpoint URL*.
+
+### "O bot do Telegram não responde"
+O token pode ter sido revogado no @BotFather. Rode `__CLI_NAME__` de novo e cole o token atual.
+
+### "O agente responde 'qual contato? qual interação?'"
+A rota do webhook está sem os dados do evento. O assistente cria a rota com o marcador `{__raw__}`. Rode `__CLI_NAME__ doctor` para recriar.
+
+### "O Zernio mostra 200/sucesso, mas o agente não age"
+A rota não pode ter **filtro de eventos**. O assistente cria a rota **sem filtro**. Rode `__CLI_NAME__ doctor`.
+
+### "O Zernio mostra 401 (não autorizado)"
+A **chave de segurança** (Signing Secret) no painel do Zernio difere da que está na VPS. Rode `__CLI_NAME__ info` para ver a chave certa e cole no Zernio.
+
+### "Depois de atualizar o Hermes, parou" (instalação nativa)
+Atualizar o Hermes apaga o ajuste da assinatura (`X-Zernio-Signature`). Rode `__CLI_NAME__ doctor` — ele reaplica.
+
+### "Depois de um `docker compose down/up`, parou" (Docker)
+O assistente já deixa um ajuste que reaplica sozinho a cada reinício do container. Se ainda falhar, rode `__CLI_NAME__ doctor`.
+
+### "A resposta demora vários minutos"
+Depende do modelo de IA configurado no seu Hermes. Modelos gratuitos costumam ser mais lentos. Configure um modelo mais rápido no perfil.
+
+<!-- TODO: itens específicos do nicho, se houver -->
+
+---
+
+Se nada disso resolver, leve a saída do `__CLI_NAME__ doctor` para a comunidade.

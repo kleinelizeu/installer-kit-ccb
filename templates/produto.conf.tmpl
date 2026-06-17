@@ -1,0 +1,22 @@
+# produto.conf — Identidade do produto (sourçado ANTES de tudo por instalar.sh/doctor.sh).
+# Bash puro (KEY="value"), sem lógica. Um por nicho.
+#
+# Preencha os __PLACEHOLDERS__ e rode:  installer-kit-ccb/bin/kit-sync <pasta-deste-repo>
+# (o kit-sync vendoriza lib/ + modelos/, gera install.sh/instalar.sh/doctor.sh e carimba KIT_VERSION).
+
+PRODUTO="__PRODUTO__"                       # slug do produto/repo (ex.: clinica-ccb)
+PRODUTO_NOME="__PRODUTO_NOME__"             # título humano (banner/docs) (ex.: Hermes Clínica by CCB)
+CLI_NAME="__CLI_NAME__"                     # comando global + symlink (ex.: hermes-clinica)
+PERFIL_PADRAO="__PERFIL_PADRAO__"           # nome do perfil Hermes (ex.: clinica)
+NICHO="__NICHO__"                           # chave curta do nicho (ex.: clinica)
+TRACK="__TRACK__"                           # solo | squad
+SQUAD_FRAMEWORK="__SQUAD_FRAMEWORK__"       # "" (solo) | ruflo | ecc
+
+ESTADO_DIR="/root/.${PRODUTO}"              # estado/segredos só na VPS (derivado; não editar)
+
+REPO_URL="__REPO_URL__"                     # https://github.com/kleinelizeu/<produto>.git
+RAW_BASE="__RAW_BASE__"                     # https://raw.githubusercontent.com/kleinelizeu/<produto>/main
+
+BANNER_FILE="banner.txt"                    # arte ASCII do banner (opcional; cai num quadro simples)
+EXEMPLO_BOT_NOME="__EXEMPLO_BOT_NOME__"     # exemplo de nome de bot no tutorial (ex.: Atendente da Clínica)
+# WEBHOOK_PORT="8644"                       # descomente só se precisar de outra porta (1 produto por VPS)
