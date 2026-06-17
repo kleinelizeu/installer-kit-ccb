@@ -75,8 +75,9 @@ cp "$KIT_DIR/templates/instalar.sh" "$DESTINO/instalar.sh"
 cp "$KIT_DIR/templates/doctor.sh"   "$DESTINO/doctor.sh"
 chmod +x "$DESTINO/install.sh" "$DESTINO/instalar.sh" "$DESTINO/doctor.sh"
 
-# 5) VERSION (se faltar) e KIT_VERSION.
-[[ -f "$DESTINO/VERSION" ]] || cp "$KIT_DIR/templates/VERSION" "$DESTINO/VERSION"
+# 5) VERSION (se faltar), .gitignore (se faltar) e KIT_VERSION.
+[[ -f "$DESTINO/VERSION" ]]    || cp "$KIT_DIR/templates/VERSION" "$DESTINO/VERSION"
+[[ -f "$DESTINO/.gitignore" ]] || cp "$KIT_DIR/templates/gitignore" "$DESTINO/.gitignore"
 cp "$KIT_DIR/KIT_VERSION" "$DESTINO/KIT_VERSION"
 
 ok "Motor sincronizado (kit $(cat "$KIT_DIR/KIT_VERSION"))."
