@@ -94,6 +94,7 @@ def _install_fakes():
 
 
 def main():
+    sys.dont_write_bytecode = True  # não criar __pycache__ em modelos/
     _install_fakes()
     saf = tempfile.NamedTemporaryFile(delete=False, suffix=".json")
     json.dump({"type": "service_account", "client_email": "x@y.iam.gserviceaccount.com",

@@ -38,10 +38,10 @@ fi
 
 inf "Vendorizando o motor para $PRODUTO ($TRACK)..."
 
-# 1) Motor
+# 1) Motor (só arquivos; ignora __pycache__ e afins)
 mkdir -p "$DESTINO/lib" "$DESTINO/modelos"
 cp "$KIT_DIR"/lib/*.sh "$DESTINO/lib/"
-cp "$KIT_DIR"/modelos/* "$DESTINO/modelos/"
+find "$KIT_DIR/modelos" -maxdepth 1 -type f -exec cp {} "$DESTINO/modelos/" \;
 
 # 2) Squad: anexa o lib do framework e as checagens extras.
 if [[ "$TRACK" == "squad" ]]; then
