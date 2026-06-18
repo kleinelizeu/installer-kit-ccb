@@ -1,25 +1,22 @@
-# ECC — squad (SPIKE, ainda NÃO construir)
+# ECC — squad (SPIKE: ARQUIVADO)
 
-O ECC (`affaan-m/ecc`) é um plugin/runtime **centrado no Claude Code** (`/multi-plan`,
-`/multi-execute` + `npx ccg-workflow`). Diferente do Ruflo, **não expõe um MCP server**
-que o Hermes possa registrar como cliente. Por isso, rodar o ECC como esquadrão sob o
-Hermes-na-VPS é um experimento, não um produto pronto.
+## Veredito (2026-06-17): ARQUIVADO. Marketing fica SOLO.
 
-## O que o spike na VPS precisa PROVAR (gate antes de qualquer build)
+O spike de pesquisa concluiu que o **ECC não pode ser dirigido headless pelo Hermes**.
 
-1. **Headless/root:** ECC e `ccg-workflow` instalam e rodam de forma não-interativa,
-   como root, numa Ubuntu limpa (sem TUI do Claude Code aberto).
-2. **Interface programática:** existe um jeito do Hermes entregar uma tarefa ao
-   esquadrão ECC e receber o resultado de volta SEM um humano no terminal
-   (MCP? HTTP? CLI com saída capturável?).
-3. **Auth scriptável e idempotente:** as credenciais (Claude Code / API keys) podem
-   ser configuradas por script e o passo pode rodar 2x sem quebrar (contrato do `executar_passo`).
-4. **Persistência:** sobrevive a reboot/restart do gateway, e o doctor consegue verificar.
+### Por quê
+O ECC (`affaan-m/ecc`) é, na essência, um **plugin do Claude Code** (skills, commands, hooks, rules).
+- **Não expõe MCP server, HTTP API nem daemon** para orquestração externa (ele empacota MCP *clients*, não um "ECC-as-a-service"). Diferente do Ruflo, que expõe `ruflo mcp start`.
+- Os comandos `/multi-plan`, `/multi-execute`, etc. **exigem o `ccg-workflow`** (`npx ccg-workflow`) e rodam **dentro de uma sessão do Claude Code** (`~/.claude/bin/codeagent-wrapper`, `~/.claude/.ccg/prompts/*`) — não como um serviço que o Hermes possa chamar.
+- Conclusão: uma plataforma self-hosted (Hermes, controlado por Telegram) **não tem interface programática** para entregar uma tarefa ao swarm do ECC e receber o resultado sem um humano/Claude Code dirigindo.
 
-## Decisão (travada com o usuário)
+Construir um `marketing-squad-ccb` sobre o ECC exigiria embarcar um **Claude Code separado** + uma ponte indefinida — o que quebra o modelo "um agente Hermes, instalação em 1 comando".
 
-- Marketing/agências **publica como SOLO agora** (mesmo padrão Zernio-SDR, conteúdo de marketing).
-- O esquadrão ECC fica **gated** neste spike. Se (2) ou (3) falharem, **arquivar** o squad ECC
-  e manter Marketing como solo. Se passar, criar `marketing-squad-ccb` (= solo + passo squad ECC).
+### Decisão
+- **Marketing permanece SOLO** (publicado em `marketing-ccb`), no padrão Zernio-SDR comprovado.
+- O squad ECC fica **arquivado** até (se algum dia) o ECC expor uma interface de servidor (MCP/HTTP) que o Hermes possa consumir como faz com Zernio/Ruflo.
+- `kit-sync` **recusa** `TRACK=squad` + `SQUAD_FRAMEWORK=ecc` (guard já no kit-sync).
 
-Enquanto o spike não passar, `kit-sync` **recusa** `TRACK=squad` + `SQUAD_FRAMEWORK=ecc`.
+### Fontes
+- https://github.com/affaan-m/ecc (README / arquitetura: harness-native, plugin de Claude Code)
+- https://deepwiki.com/affaan-m/ECC/1.1-getting-started-and-installation (`/plugin install ecc@ecc` + `npx ccg-workflow`)
