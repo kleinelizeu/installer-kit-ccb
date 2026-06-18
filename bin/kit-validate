@@ -41,6 +41,15 @@ if [[ "${TRACK:-}" == "squad" ]]; then
   [[ -n "${SQUAD_FRAMEWORK:-}" && "${SQUAD_FRAMEWORK}" != __*__ ]] && ok "SQUAD_FRAMEWORK=${SQUAD_FRAMEWORK}" \
     || bad "TRACK=squad exige SQUAD_FRAMEWORK"
 fi
+# AGENDA é opcional; se preenchida, valida o valor e o conector.
+if [[ -n "${AGENDA:-}" ]]; then
+  if [[ "${AGENDA}" == __*__ ]]; then bad "AGENDA ainda é placeholder (${AGENDA}) — use \"\" ou \"google\""
+  elif [[ "${AGENDA}" == "google" ]]; then
+    [[ -f "$DESTINO/modelos/gcal_mcp.py" ]] && ok "AGENDA=google (conector gcal_mcp.py presente)" \
+      || bad "AGENDA=google mas falta modelos/gcal_mcp.py (rode kit-sync)"
+    [[ -f "$DESTINO/lib/36-agenda.sh" ]] || bad "AGENDA=google mas falta lib/36-agenda.sh"
+  else bad "AGENDA inválida ('${AGENDA}') — use \"\" ou \"google\""; fi
+fi
 
 sec "3) install.sh (sem placeholders pendentes)"
 if grep -qE '__[A-Z_]+__' "$DESTINO/install.sh"; then
