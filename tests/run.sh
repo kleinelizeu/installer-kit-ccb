@@ -101,6 +101,13 @@ n="$(echo "$DYN" | sed -n 's/^PERG_N=//p')"
 echo "$DYN" | grep -q '^CONTEXT_OK$' && ok "sem {{placeholder}} sobrando no contexto" || bad "placeholders não resolvidos"
 echo "$DYN" | grep -q '^SUBST_OK$'   && ok "substituição aplicada (Clínica Teste)" || bad "substituição falhou"
 
+sec "4) lógica do conector de agenda (gcal_mcp.py, offline)"
+if python3 "$KIT_DIR/tests/test_gcal_logic.py" >/tmp/kit-gcal.out 2>&1; then
+  ok "gcal_mcp.py: chamadas à API do Google corretas (criar_evento/freebusy/list)"
+else
+  bad "test_gcal_logic falhou:"; sed 's/^/      /' /tmp/kit-gcal.out
+fi
+
 sec "Resultado"
 if (( FALHAS == 0 )); then printf '\033[32m✔ KIT OK (%d verificações).\033[0m\n' "$(( ${#SHFILES[@]} + 10 ))"; exit 0
 else printf '\033[31m✘ %d falha(s).\033[0m\n' "$FALHAS"; exit 1; fi
